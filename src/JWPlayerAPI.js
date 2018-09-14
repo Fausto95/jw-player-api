@@ -98,6 +98,7 @@ class JWPlayerAPI {
             body: file
           }
         )
+          .then(res => res.json())
           .then(res => res)
           .catch(err => new Error('An error occurred while trying to upload the file!'));
       })
