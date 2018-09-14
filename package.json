@@ -1,0 +1,62 @@
+{
+  "name": "jwplayer-api",
+  "version": "0.0.1",
+  "description": "A library wrapper around JW Player API",
+  "main": "cjs/jwplayer-api.js",
+  "module": "module/jwplayer-api.js",
+  "unpkg": "umd/jwplayer-api.js",
+  "scripts": {
+    "build": "node ./scripts/build.js",
+    "clean": "rm -rf lib",
+    "prepublish": "npm run clean && npm run build",
+    "lint": "eslint ./src/ --ext .js,.json",
+    "lint:fix": "npm run lint -- --fix"
+  },
+  "keywords": [],
+  "author": "Faustino Kialungila",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.0.1",
+    "@babel/plugin-transform-runtime": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "@babel/preset-es2017": "^7.0.0-beta.53",
+    "@babel/preset-stage-3": "^7.0.0",
+    "@coorpacademy/eslint-plugin-coorpacademy": "^8.1.1",
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-3": "^6.24.1",
+    "eslint": "^5.5.0",
+    "pascal-case": "^2.0.1",
+    "rollup": "^0.65.2",
+    "rollup-plugin-babel": "^4.0.3",
+    "rollup-plugin-babel-minify": "^6.0.0",
+    "rollup-plugin-commonjs": "^9.1.6",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-replace": "^2.0.0",
+    "rollup-plugin-uglify": "^5.0.2"
+  },
+  "files": [
+    "cjs",
+    "esm",
+    "umd"
+  ],
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "crypto-js": "^3.1.9-1",
+    "lodash-fp": "^0.10.4",
+    "nonce": "^1.0.4",
+    "path": "^0.12.7",
+    "query-string": "^6.1.0",
+    "to-camel-case": "^1.0.0",
+    "to-snake-case": "^1.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fausto95/jw-player-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Fausto95/jw-player-api/issues"
+  },
+  "homepage": "https://github.com/Fausto95/jw-player-api#readme"
+}
