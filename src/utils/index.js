@@ -50,21 +50,22 @@ const formatVideoInfo = video => ({
   link: video.link,
   custom: video.custom,
   author: video.author,
-  video: `https://content.jwplatform.com/players/${video.key}.html`,
   updatedAt: video.updated,
   uploadSessionId: video.upload_session_id,
   expiresDate: video.expires_date,
+  preview: `http://content.jwplatform.com/previews/${video.key}`,
+  video: `https://content.jwplatform.com/players/${video.key}.html`,
   views: video.view,
   sourceType: video.sourcetype,
   size: video.size,
   status: video.status
 });
 
-const getVideoInfo = _video => {
-  if (_.isArray(_video)) {
-    return _video.map(video => formatVideoInfo(video));
+const getVideoInfo = video => {
+  if (_.isArray(video)) {
+    return video.map(_video => formatVideoInfo(_video));
   }
-  return formatVideoInfo(_video);
+  return formatVideoInfo(video);
 };
 
 const toCamelCase = config => {
@@ -100,6 +101,97 @@ const getUploadTokenAndKey = body => ({
   key: _.get('link.query.key', body)
 });
 
+const getThumbnailUploadParams = async (config, secretKey, videoKey, request) => {
+  let params = concatParams(config, secretKey)({videoKey});
+  const {thumbnail: {status}} = await (await request(
+    `https://api.jwplatform.com/v1/videos/thumbnails/show?${params}`,
+    {headers}
+  )).json();
+  if (status === 'ready') {
+    params = concatParams(config, secretKey)({videoKey});
+    const response = await (await request(
+      `https://api.jwplatform.com/v1/videos/thumbnails/update?${params}`
+    )).json();
+    return getUploadTokenAndKey(response);
+  }
+  return new Error('Unaible to upload this thumbnail');
+};
+
+const formatPlayerInfo = player => ({
+  advertising: player.advertising,
+  advertising_schedule_key: player.advertising_schedule_key,
+  aspectratio: player.aspectratio,
+  autostart: player.autostart,
+  captions: player.captions,
+  current_item_text: player.currentitemtext,
+  custom: player.custom,
+  display_title: player.displaytitle,
+  display_description: player.displaydescription,
+  feed_container_id: player.feedcontainerid,
+  ga_web_property_id: player.ga_web_property_id,
+  height: player.height,
+  mute: player.mute,
+  name: player.name,
+  next_up_offset: player.nextupoffset,
+  next_up_text: player.nextuptext,
+  about_text: player.abouttext,
+  about_link: player.aboutlink,
+  include_compatibility_script: player.include_compatibility_script,
+  playlist: player.playlist,
+  playlist_layout: player.playlistlayout,
+  playlist_size: player.playlistsize,
+  playback_rate_controls: player.playback_rate_controls,
+  playback_rates: player.playback_rates,
+  preload: player.preload,
+  default_bandwidth_estimate: player.default_bandwidth_estimate,
+  primary: player.primary,
+  recommendations_channel_key: player.recommendations_channel_key,
+  related_autoplaymessage: player.related_autoplaymessage,
+  related_autoplaytimer: player.related_autoplaytimer,
+  related_displaymode: player.related_displaymode,
+  related_videos: player.related_videos,
+  related_heading: player.related_heading,
+  related_onclick: player.related_onclick,
+  release_channel: player.release_channel,
+  repeat: player.repeat,
+  responsive: player.responsive,
+  sharing: player.sharing,
+  sharing_heading: player.sharing_heading,
+  sharing_player_key: player.sharing_player_key,
+  sharing_sites: player.sharing,
+  site_catalyst: player.sitecatalyst,
+  skin: player.skin,
+  stretching: player.stretching,
+  template: player.template,
+  version: player.version,
+  visual_playlist: player.visualplaylist,
+  watermark: player.watermark,
+  width: player.width,
+  _key: player._key
+});
+
+const getPlayerInfo = player => {
+  if (_.isArray(player)) {
+    return player.map(p =>
+      toCamelCase({
+        views: p.views,
+        height: p.height,
+        key: p.key,
+        skin: p.skin,
+        responsive: p.responsive,
+        playlist: p.playlist,
+        release_channel: p.release_channel,
+        name: p.name,
+        custom: p.custom,
+        width: p.width,
+        version: p.version,
+        ltas_channel: p.ltas_channel
+      })
+    );
+  }
+  return toCamelCase(formatPlayerInfo(player));
+};
+
 export {
   headers,
   mode,
@@ -109,5 +201,7 @@ export {
   signature,
   getVideoInfo,
   concatParams,
-  getUploadTokenAndKey
+  getUploadTokenAndKey,
+  getThumbnailUploadParams,
+  getPlayerInfo
 };
