@@ -32,24 +32,24 @@ class JWPlayerAPI {
     return getVideoInfo(videos);
   }
 
-  getVideo(id) {
-    if (!id) {
-      return new Error('You must provide an id in order to get the video information!');
+  getVideo(videoKey) {
+    if (!videoKey) {
+      return new Error('You must provide a videoKey in order to get the video information!');
     }
-    const params = concatParams(this.config, this.secretKey)({videoKey: id});
+    const params = concatParams(this.config, this.secretKey)({videoKey});
     return fetch(`${this.baseUrl}${this.videosBaseUrl}/show?${params}`, {headers})
       .then(res => res.json())
       .then(res => {
         return getVideoInfo(res.video);
       })
-      .catch(err => new Error('No video to show'));
+      .catch(err => new Error(err));
   }
 
-  deleteVideo(id) {
-    if (!id) {
-      return new Error('You must provide an id in order to delete a video!');
+  deleteVideo(videoKey) {
+    if (!videoKey) {
+      return new Error('You must provide a videoKey in order to delete a video!');
     }
-    const params = concatParams(this.config, this.secretKey)({videoKey: id});
+    const params = concatParams(this.config, this.secretKey)({videoKey});
     return fetch(`${this.baseUrl}${this.videosBaseUrl}/delete?${params}`, {headers})
       .then(res => res.json())
       .then(res => {
@@ -58,36 +58,36 @@ class JWPlayerAPI {
         }
         return videos.videos;
       })
-      .catch(err => new Error('An error occurred while trying to delete the video!'));
+      .catch(err => new Error(err));
   }
 
-  updateVideoInfo(id, newInfo) {
-    if (!id) {
-      return new Error('You must provide an id in order to update a video!');
+  updateVideoInfo(videoKey, newInfo) {
+    if (!videoKey) {
+      return new Error('You must provide a videoKey in order to update a video!');
     }
-    const params = concatParams(this.config, this.secretKey)({videoKey: id, ...newInfo});
+    const params = concatParams(this.config, this.secretKey)({videoKey, ...newInfo});
     return fetch(`${this.baseUrl}${this.videosBaseUrl}/update?${params}`, {headers})
       .then(res => res.json())
       .then(res => {
         if (res.status === 'error') {
-          return {status: 'Error', message: `Video with the key ${id} does not exist`};
+          return {status: 'Error', message: `Video with the key ${videoKey} does not exist`};
         }
-        return this.getVideo(id);
+        return this.getVideo(videoKey);
       })
-      .catch(err => new Error('An error occurred while trying to update the video information!'));
+      .catch(err => new Error(err));
   }
 
-  async modifyThumbnail(id, options) {
-    if (!id) {
-      return new Error('You must provide an id in order to update a video!');
+  async modifyThumbnail(videoKey, options) {
+    if (!videoKey) {
+      return new Error('You must provide a videoKey in order to update a video!');
     }
-    let params = concatParams(this.config, this.secretKey)({videoKey: id});
+    let params = concatParams(this.config, this.secretKey)({videoKey});
     const {thumbnail: {status}} = await (await fetch(
       `${this.baseUrl}${this.videosBaseUrl}/thumbnails/show?${params}`,
       {headers, mode}
     )).json();
     if (status === 'ready') {
-      params = concatParams(this.config, this.secretKey)({videoKey: id, ...options});
+      params = concatParams(this.config, this.secretKey)({videoKey, ...options});
       return fetch(`${this.baseUrl}${this.videosBaseUrl}/thumbnails/update?${params}`, {
         headers
       })
@@ -98,12 +98,17 @@ class JWPlayerAPI {
     return new Error("This video's thumbnail cannot be modified");
   }
 
-  async uploadThumbnail(id, image) {
-    if (!id) {
-      return new Error('You must provide an id in order to upload a thmbnail!');
+  async uploadThumbnail(videoKey, image) {
+    if (!videoKey) {
+      return new Error('You must provide a Key in order to upload a thmbnail!');
     }
-    const params = concatParams(this.config, this.secretKey)({videoKey: id});
-    const {key, token} = await getThumbnailUploadParams(this.config, this.secretKey, id, fetch);
+    const params = concatParams(this.config, this.secretKey)({videoKey});
+    const {key, token} = await getThumbnailUploadParams(
+      this.config,
+      this.secretKey,
+      videoKey,
+      fetch
+    );
     return fetch(
       `${this.uploadBaseUrl}${
         this.videosBaseUrl
@@ -124,7 +129,7 @@ class JWPlayerAPI {
       .then(res => res);
   }
 
-  postVideo(file, customParams) {
+  uploadVideo(file, customParams) {
     let videoParams;
     if (!file) {
       return new Error('You must provide a file in order to upload it!');
@@ -150,7 +155,7 @@ class JWPlayerAPI {
         )
           .then(res => res.json())
           .then(res => this.getVideo(res.media.key))
-          .catch(err => new Error('An error occurred while trying to upload the file!'));
+          .catch(err => new Error(err));
       })
       .catch(err => new Error(err));
   }
@@ -166,11 +171,11 @@ class JWPlayerAPI {
     return getPlayerInfo(players);
   }
 
-  async getPlayer(id) {
-    if (!id) {
-      return new Error('You must provide an id in order to get a player!');
+  async getPlayer(playerKey) {
+    if (!playerKey) {
+      return new Error('You must provide a playerKey in order to get a player!');
     }
-    const params = concatParams(this.config, this.secretKey)({playerKey: id});
+    const params = concatParams(this.config, this.secretKey)({playerKey});
     const {player} = await (await fetch(`${this.baseUrl}/players/show?${params}`, {
       headers
     })).json();
@@ -188,11 +193,11 @@ class JWPlayerAPI {
     return this.getPlayer(player.key);
   }
 
-  deletePlayer(id) {
-    if (!id) {
-      return new Error('You must provide an id in order to delete a player!');
+  deletePlayer(playerKey) {
+    if (!playerKey) {
+      return new Error('You must provide a playerKey in order to delete a player!');
     }
-    const params = concatParams(this.config, this.secretKey)({playerKey: id});
+    const params = concatParams(this.config, this.secretKey)({playerKey});
     return fetch(`${this.baseUrl}/players/delete?${params}`, {headers})
       .then(res => res.json())
       .then(res => {
@@ -201,7 +206,23 @@ class JWPlayerAPI {
         }
         return players.player;
       })
-      .catch(err => new Error('An error occurred while trying to delete the video!'));
+      .catch(err => new Error(err));
+  }
+
+  updatePlayer(playerKey, newInfo) {
+    if (!playerKey) {
+      return new Error('You must provide a playerKey in order to update a player!');
+    }
+    const params = concatParams(this.config, this.secretKey)({playerKey, ...newInfo});
+    return fetch(`${this.baseUrl}/players/update?${params}`, {headers})
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'error') {
+          return {status: 'Error', message: `Player with the key ${playerKey} does not exist`};
+        }
+        return this.getPlayer(playerKey);
+      })
+      .catch(err => new Error(err));
   }
 }
 
