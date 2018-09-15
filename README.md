@@ -1,11 +1,11 @@
 :🚧: Still under construction :🚧: (currently working in Node.js)
 
-  
-#🔧 Installation
+
+# 🔧 Installation
 ```shell
 yarn add jwplayer-sdk
 ```
-#⚙️Usage
+# ⚙️ Usage
 
 ```js
 
@@ -23,7 +23,7 @@ const JWAPI = new JWPlayer({
 const videos = await JWAPI.getAllVideos(params); // params are optional
 /*
   result: [
-    { 
+    {
       views: 0,
       height: 400,
       cloudHostedPlayer: 'https://content.jwplatform.com/libraries/dfNGJds0.js',
@@ -57,13 +57,13 @@ const videos = await JWAPI.getAllVideos(params); // params are optional
   .uploadVideo(file: ReadableStream, params: Object) // Params is optional
   .updateVideo(videoKey: String, params: Object) // Both required
   .deleteVideo(videoKey: String) // Required
-  
+
 //Videos Thumbnails
   .modifyThumbnail(videoKey: String, params: Object) // Both Required
   .uploadThumbnail(videoKey: String, imageFile: ReadableStream) // Both Required
 ````
 
-## Contributing 
+## Contributing
 
 You must have a JwPlayer account!
 Clone the repo
