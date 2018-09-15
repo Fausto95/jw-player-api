@@ -130,7 +130,7 @@ class JWPlayerAPI {
   }
 
   uploadVideo(file, customParams) {
-    let videoParams;
+    let videoParams = {};
     if (!file) {
       return new Error('You must provide a file in order to upload it!');
     }
