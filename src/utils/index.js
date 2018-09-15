@@ -124,6 +124,7 @@ const formatPlayerInfo = player => ({
   autostart: player.autostart,
   captions: player.captions,
   current_item_text: player.currentitemtext,
+  cloudHostedPlayer: `https://content.jwplatform.com/libraries/${player.key}.js`,
   custom: player.custom,
   display_title: player.displaytitle,
   display_description: player.displaydescription,
@@ -176,6 +177,7 @@ const getPlayerInfo = player => {
       toCamelCase({
         views: p.views,
         height: p.height,
+        cloudHostedPlayer: `https://content.jwplatform.com/libraries/${p.key}.js`,
         key: p.key,
         skin: p.skin,
         responsive: p.responsive,
