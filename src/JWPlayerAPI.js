@@ -1,41 +1,46 @@
+import fetch from 'isomorphic-fetch';
+import 'es6-promise';
 import {
+  headers,
+  mode,
   generateParams,
-  getVideosLinks,
-  getVideoLink,
-  toCamelCase,
+  getVideoInfo,
   concatParams,
   getUploadTokenAndKey
 } from './utils';
 
 class JWPlayerAPI {
   constructor(config) {
-    this.baseUrl = 'http://api.jwplatform.com/v1';
-    this.uploadBaseUrl = 'http://upload.jwplatform.com/v1';
+    this.baseUrl = 'https://api.jwplatform.com/v1';
+    this.uploadBaseUrl = 'https://upload.jwplatform.com/v1';
     this.contentBaseUrl = 'https://content.jwplatform.com';
     this.config = generateParams(config);
     this.secretKey = config.secretKey;
     this.videosBaseUrl = '/videos';
   }
 
-  getVideos(params) {
-    let _params = params;
+  async getAllVideos(params) {
+    let _params = this.config;
     if (params) {
       _params = concatParams(this.config, this.secretKey)(params);
     }
-    return fetch(`${this.baseUrl}${this.videosBaseUrl}/list?${_params}`)
-      .then(res => res.json())
-      .then(res => getVideosLinks(res.videos))
-      .catch(err => new Error('No videos to show!'));
+    const {videos} = await (await fetch(`${this.baseUrl}${this.videosBaseUrl}/list?${_params}`, {
+      headers,
+      mode
+    })).json();
+    return getVideoInfo(videos);
   }
 
-  getVideoInfo(id) {
+  getVideo(id) {
     if (!id) {
       return new Error('You must provide an id in order to get the video information!');
     }
     let params = concatParams(this.config, this.secretKey)({videoKey: id});
-    return fetch(`${this.baseUrl}${this.videosBaseUrl}/show?${params}`)
+    return fetch(`${this.baseUrl}${this.videosBaseUrl}/show?${params}`, {headers, mode})
       .then(res => res.json())
-      .then(res => ({...toCamelCase(res.video), videoLink: getVideoLink(res.video.key)}))
+      .then(res => {
+        return getVideoInfo(res.video);
+      })
       .catch(err => new Error('No video to show'));
   }
 
@@ -44,7 +49,7 @@ class JWPlayerAPI {
       return new Error('You must provide an id in order to delete a video!');
     }
     let params = concatParams(this.config, this.secretKey)({videoKey: id});
-    return fetch(`${this.baseUrl}${this.videosBaseUrl}/delete?${params}`)
+    return fetch(`${this.baseUrl}${this.videosBaseUrl}/delete?${params}`, {headers, mode})
       .then(res => res.json())
       .then(res => {
         let message = res.videos[id];
@@ -61,13 +66,13 @@ class JWPlayerAPI {
       return new Error('You must provide an id in order to update a video!');
     }
     let params = concatParams(this.config, this.secretKey)({videoKey: id, ...newInfo});
-    return fetch(`${this.baseUrl}${this.videosBaseUrl}/update?${params}`)
+    return fetch(`${this.baseUrl}${this.videosBaseUrl}/update?${params}`, {headers, mode})
       .then(res => res.json())
       .then(res => {
         if (res.status === 'error') {
           return {status: 'Error', message: `Video with the key ${id} does not exist`};
         }
-        return this.getVideoInfo(id);
+        return this.getVideo(id);
       })
       .catch(err => new Error('An error occurred while trying to update the video information!'));
   }
@@ -81,20 +86,19 @@ class JWPlayerAPI {
       videoParams = customParams;
     }
     let params = concatParams(this.config, this.secretKey)({...videoParams});
-    return fetch(`${this.baseUrl}${this.videosBaseUrl}/create?${params}`)
+    return fetch(`${this.baseUrl}${this.videosBaseUrl}/create?${params}`, {headers, mode})
       .then(res => res.json())
       .then(res => {
         const {key, token} = getUploadTokenAndKey(res);
-        return fetch(
+        return;
+        fetch(
           `${this.uploadBaseUrl}${
             this.videosBaseUrl
           }/upload?api_format=json&key=${key}&token=${token}`,
           {
             method: 'POST',
-            headers: {
-              'Cache-Control': 'no-cache',
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
+            headers,
+            mode,
             body: file
           }
         )

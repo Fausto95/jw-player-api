@@ -1,16 +1,18 @@
 {
-  "name": "jwplayer-api",
-  "version": "0.0.1",
+  "name": "jwplayer-sdk",
+  "version": "0.0.28",
   "description": "A library wrapper around JW Player API",
-  "main": "cjs/jwplayer-api.js",
-  "module": "module/jwplayer-api.js",
-  "unpkg": "umd/jwplayer-api.js",
+  "main": "dist/jwplayer-sdk.js",
+  "umd:main": "dist/jwplayer-sdk.umd.js",
+  "module": "dist/jwplayer-sdk.m.js",
+  "source": "src/JWPlayerAPI.js",
   "scripts": {
-    "build": "node ./scripts/build.js",
-    "clean": "rm -rf lib",
+    "clean": "rm -rf dist",
     "prepublish": "npm run clean && npm run build",
     "lint": "eslint ./src/ --ext .js,.json",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "build": "microbundle",
+    "dev": "microbundle watch"
   },
   "keywords": [],
   "author": "Faustino Kialungila",
@@ -21,13 +23,7 @@
     "@babel/preset-env": "^7.0.0",
     "@coorpacademy/eslint-plugin-coorpacademy": "^8.1.1",
     "eslint": "^5.5.0",
-    "pascal-case": "^2.0.1",
-    "rollup": "^0.65.2",
-    "rollup-plugin-babel": "^4.0.3",
-    "rollup-plugin-babel-minify": "^6.0.0",
-    "rollup-plugin-commonjs": "^9.1.6",
-    "rollup-plugin-node-resolve": "^3.4.0",
-    "rollup-plugin-replace": "^2.0.0"
+    "microbundle": "^0.6.0"
   },
   "files": [
     "cjs",
@@ -35,8 +31,13 @@
     "umd"
   ],
   "dependencies": {
+    "@babel/runtime": "^7.0.0",
+    "axios": "^0.18.0",
     "child_process": "^1.0.2",
+    "cross-fetch": "^2.2.2",
     "crypto-js": "^3.1.9-1",
+    "es6-promise": "^4.2.5",
+    "isomorphic-fetch": "^2.2.1",
     "lodash-fp": "^0.10.4",
     "nonce": "^1.0.4",
     "path": "^0.12.7",
