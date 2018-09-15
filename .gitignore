@@ -1,6 +1,4 @@
 .DS_Store
-cjs/
-esm/
+dist/
 node_modules/
 package-lock.json
-umd/
