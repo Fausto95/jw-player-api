@@ -1,6 +1,6 @@
 {
   "name": "jwplayer-sdk",
-  "version": "0.0.28",
+  "version": "0.0.56",
   "description": "A library wrapper around JW Player API",
   "main": "dist/jwplayer-sdk.js",
   "umd:main": "dist/jwplayer-sdk.umd.js",
@@ -18,9 +18,6 @@
   "author": "Faustino Kialungila",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.0.1",
-    "@babel/plugin-transform-runtime": "^7.0.0",
-    "@babel/preset-env": "^7.0.0",
     "@coorpacademy/eslint-plugin-coorpacademy": "^8.1.1",
     "eslint": "^5.5.0",
     "microbundle": "^0.6.0"
@@ -31,14 +28,9 @@
     "umd"
   ],
   "dependencies": {
-    "@babel/runtime": "^7.0.0",
-    "axios": "^0.18.0",
-    "child_process": "^1.0.2",
-    "cross-fetch": "^2.2.2",
     "crypto-js": "^3.1.9-1",
     "es6-promise": "^4.2.5",
     "isomorphic-fetch": "^2.2.1",
-    "lodash-fp": "^0.10.4",
     "nonce": "^1.0.4",
     "path": "^0.12.7",
     "query-string": "^6.1.0",
