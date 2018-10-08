@@ -79,9 +79,9 @@ Make your changes, test and send a PR
 
 ## Roadmap (API)
 - [ ] /accounts
-- [x] /accounts/tags
-- [x] /accounts/usage
-- [x] /channels
+- [ ] /accounts/tags
+- [ ] /accounts/usage
+- [ ] /channels
 - [ ] /channels/videos
 - [x] /players
 - [ ] /status
@@ -89,7 +89,7 @@ Make your changes, test and send a PR
 - [ ] /videos/converstations
 - [ ] /videos/tags
 - [x] /videos/thumbnails
-- [x] /videos/tracks
+- [ ] /videos/tracks
 - [ ] /fetch-upload
 
 ## License
