@@ -4,31 +4,31 @@ import utf8 from 'crypto-js/enc-utf8';
 import hex from 'crypto-js/enc-hex';
 import nonce from 'nonce';
 import {stringify, parse} from 'query-string';
-import camelCase from 'to-camel-case';
-import snake_case from 'to-snake-case';
+import camelCase from './camelCase';
+import snake_case from './snakeCase';
 
 const headers = {
   'Content-Type': 'application/x-www-form-urlencoded',
-  'Access-Control-Allow-Origin': '*',
+  // 'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'ContentType',
-  'Access-Control-Allow-Methods': 'GET, POST'
+  'Access-Control-Allow-Methods': 'GET,POST'
 };
 
-const mode = 'no-cors';
+const mode = 'cors';
 
 const signature = (config, secret_key) => sha1(stringify(config) + secret_key).toString(hex);
 
-const generateParams = (config, customParams) => {
+const generateParams = (config, customParams = {}) => {
   const params = {
     api_format: config.apiFormat,
     api_key: config.apiKey,
     api_nonce: nonce()(8),
     api_timestamp: Math.floor(Date.now() / 1000)
   };
-  if (!customParams) {
+  if (_.isEmpty(customParams)) {
     return `${stringify(params)}&api_signature=${signature(params, config.secretKey)}`;
   }
-  return `${stringify({...params, ...customParams})}&api_signature=${signature(
+  return `${stringify({...params, ...toSnakeCase(customParams)})}&api_signature=${signature(
     {...params, ...customParams},
     config.secretKey
   )}`;
