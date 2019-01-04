@@ -1,4 +1,3 @@
-import fetch from 'isomorphic-fetch';
 import request from 'request-promise';
 import 'es6-promise';
 import {
@@ -31,12 +30,17 @@ class JWPlayerAPI {
       videoParams = customParams;
     }
     const params = concatParams(this.config, this.secretKey)({downloadUrl, ...videoParams});
-    const response = await request.post({
-      url: `${this.baseUrl}${this.videosBaseUrl}/create?${params}`,
-      headers,
-      json: true
-    });
-    return response;
+    try {
+      const response = await request({
+        url: `${this.baseUrl}${this.videosBaseUrl}/create?${params}`,
+        method: 'POST',
+        headers,
+        json: true
+      });
+      return response;
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
   }
 
   async getAllVideos(params) {
@@ -44,55 +48,70 @@ class JWPlayerAPI {
     if (params) {
       _params = concatParams(this.config, this.secretKey)(params);
     }
-    const {videos} = await (await fetch(`${this.baseUrl}${this.videosBaseUrl}/list?${_params}`, {
-      headers
-    })).json();
-    return getVideoInfo(videos);
+    try {
+      const {videos} = await request({
+        url: `${this.baseUrl}${this.videosBaseUrl}/list?${_params}`,
+        headers,
+        json: true
+      });
+      return getVideoInfo(videos);
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
   }
 
-  getVideo(videoKey) {
+  async getVideo(videoKey) {
     if (!videoKey) {
       return new Error('You must provide a videoKey in order to get the video information!');
     }
     const params = concatParams(this.config, this.secretKey)({videoKey});
-    return fetch(`${this.baseUrl}${this.videosBaseUrl}/show?${params}`, {headers})
-      .then(res => res.json())
-      .then(res => {
-        return getVideoInfo(res.video);
-      })
-      .catch(err => new Error(err));
+    try {
+      const {video} = await request({
+        url: `${this.baseUrl}${this.videosBaseUrl}/show?${params}`,
+        headers,
+        json: true
+      });
+      return getVideoInfo(res.video);
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
   }
 
-  deleteVideo(videoKey) {
+  async deleteVideo(videoKey) {
     if (!videoKey) {
       return new Error('You must provide a videoKey in order to delete a video!');
     }
     const params = concatParams(this.config, this.secretKey)({videoKey});
-    return fetch(`${this.baseUrl}${this.videosBaseUrl}/delete?${params}`, {headers})
-      .then(res => res.json())
-      .then(res => {
-        if (res.videos.total === 1) {
-          return res.videos.video[0];
-        }
-        return videos.videos;
-      })
-      .catch(err => new Error(err));
+    try {
+      const {videos, status} = await request({
+        url: `${this.baseUrl}${this.videosBaseUrl}/delete?${params}`,
+        headers,
+        json: true
+      });
+      return {videos, status};
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
   }
 
-  updateVideoInfo(videoKey, newInfo) {
-    if (!videoKey) {
-      return new Error('You must provide a videoKey in order to update a video!');
+  async updateVideoInfo(videoKey, newInfo) {
+    try {
+      if (!videoKey) {
+        return new Error('You must provide a videoKey in order to update a video!');
+      }
+      const params = concatParams(this.config, this.secretKey)({videoKey, ...newInfo});
+      const response = await request({
+        url: `${this.baseUrl}${this.videosBaseUrl}/update?${params}`,
+        json: true,
+        headers
+      });
+      if (response.status === 'error') {
+        return {status: 'Error', message: `Video with the key ${videoKey} does not exist`};
+      }
+      return this.getVideo(videoKey);
+    } catch (error) {
+      return Promise.reject(new Error(error));
     }
-    const params = concatParams(this.config, this.secretKey)({videoKey, ...newInfo});
-    return fetch(`${this.baseUrl}${this.videosBaseUrl}/update?${params}`, {headers})
-      .then(res => res.json())
-      .then(res => {
-        if (res.status === 'error') {
-          return {status: 'Error', message: `Video with the key ${videoKey} does not exist`};
-        }
-        return this.getVideo(videoKey);
-      })
-      .catch(err => new Error(err));
   }
 
   async modifyThumbnail(videoKey, options) {
@@ -100,20 +119,25 @@ class JWPlayerAPI {
       return new Error('You must provide a videoKey in order to update a video!');
     }
     let params = concatParams(this.config, this.secretKey)({videoKey});
-    const {thumbnail: {status}} = await (await fetch(
-      `${this.baseUrl}${this.videosBaseUrl}/thumbnails/show?${params}`,
-      {headers, mode}
-    )).json();
-    if (status === 'ready') {
-      params = concatParams(this.config, this.secretKey)({videoKey, ...options});
-      return fetch(`${this.baseUrl}${this.videosBaseUrl}/thumbnails/update?${params}`, {
-        headers
-      })
-        .then(res => res.json())
-        .then(res => res)
-        .catch(err => err);
+    try {
+      const {thumbnail: {status}} = await request({
+        url: `${this.baseUrl}${this.videosBaseUrl}/thumbnails/show?${params}`,
+        headers,
+        json: true,
+        mode
+      });
+      if (status === 'ready') {
+        params = concatParams(this.config, this.secretKey)({videoKey, ...options});
+        const response = await request({
+          url: `${this.baseUrl}${this.videosBaseUrl}/thumbnails/update?${params}`,
+          headers,
+          json: true
+        });
+        return response;
+      }
+    } catch (error) {
+      return Promise.reject(new Error(error));
     }
-    return new Error("This video's thumbnail cannot be modified");
   }
 
   async uploadThumbnail(videoKey, image) {
@@ -125,29 +149,25 @@ class JWPlayerAPI {
       this.config,
       this.secretKey,
       videoKey,
-      fetch
+      request
     );
-    return fetch(
-      `${this.uploadBaseUrl}${
-        this.videosBaseUrl
-      }/thumbnails/upload?api_format=json&key=${key}&token=${token}`,
-      {
+    try {
+      const response = await request({
+        url: `${this.uploadBaseUrl}${
+          this.videosBaseUrl
+        }/thumbnails/upload?api_format=json&key=${key}&token=${token}`,
         method: 'POST',
         headers,
-        body: image
-      }
-    )
-      .catch(err => new Error(err))
-      .then(res => {
-        if (res.status === 412 || res.statusText === 'Unsupported Media Type') {
-          new Error({status: 'Failed', message: response.statusText});
-        }
-        return res.json();
-      })
-      .then(res => res);
+        json: true,
+        formData: {file: image}
+      });
+      return response;
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
   }
 
-  uploadVideo(file, customParams) {
+  async uploadVideo(file, customParams) {
     let videoParams = {};
     if (!file) {
       return new Error('You must provide a file in order to upload it!');
@@ -156,26 +176,26 @@ class JWPlayerAPI {
       videoParams = customParams;
     }
     const params = concatParams(this.config, this.secretKey)({...videoParams});
-    return fetch(`${this.baseUrl}${this.videosBaseUrl}/create?${params}`, {headers})
-      .then(res => res.json())
-      .then(res => {
-        const {key, token} = getUploadTokenAndKey(res);
-        return;
-        fetch(
-          `${this.uploadBaseUrl}${
-            this.videosBaseUrl
-          }/upload?api_format=json&key=${key}&token=${token}`,
-          {
-            method: 'POST',
-            headers,
-            body: file
-          }
-        )
-          .then(res => res.json())
-          .then(res => this.getVideo(res.media.key))
-          .catch(err => new Error(err));
-      })
-      .catch(err => new Error(err));
+    const response = await request({
+      url: `${this.baseUrl}${this.videosBaseUrl}/create?${params}`,
+      headers,
+      json: true
+    });
+    const {key, token} = getUploadTokenAndKey(response);
+    try {
+      const uploadResponse = await request({
+        url: `${this.uploadBaseUrl}${
+          this.videosBaseUrl
+        }/upload?api_format=json&key=${key}&token=${token}`,
+        method: 'POST',
+        json: true,
+        headers,
+        formData: {file}
+      });
+      return this.getVideo(uploadResponse.media.key);
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
   }
 
   async getAllPlayers(params) {
@@ -183,10 +203,16 @@ class JWPlayerAPI {
     if (params) {
       _params = concatParams(this.config, this.secretKey)(params);
     }
-    const {players} = await (await fetch(`${this.baseUrl}/players/list?${_params}`, {
-      headers
-    })).json();
-    return getPlayerInfo(players);
+    try {
+      const {players} = await request({
+        url: `${this.baseUrl}/players/list?${_params}`,
+        headers,
+        json: true
+      });
+      return getPlayerInfo(players);
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
   }
 
   async getPlayer(playerKey) {
@@ -194,10 +220,16 @@ class JWPlayerAPI {
       return new Error('You must provide a playerKey in order to get a player!');
     }
     const params = concatParams(this.config, this.secretKey)({playerKey});
-    const {player} = await (await fetch(`${this.baseUrl}/players/show?${params}`, {
-      headers
-    })).json();
-    return getPlayerInfo(player);
+    try {
+      const {player} = await request({
+        url: `${this.baseUrl}/players/show?${params}`,
+        headers,
+        json: true
+      });
+      return getPlayerInfo(player);
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
   }
 
   async createPlayer(params) {
@@ -205,42 +237,56 @@ class JWPlayerAPI {
       return new Error('You must provide all the parameters in order to create a player!');
     }
     const _params = concatParams(this.config, this.secretKey)(params);
-    const {player} = await (await fetch(`${this.baseUrl}/players/create?${_params}`, {
-      headers
-    })).json();
-    return this.getPlayer(player.key);
+    try {
+      const {player} = await request({
+        url: `${this.baseUrl}/players/create?${_params}`,
+        headers,
+        json: true
+      });
+      return this.getPlayer(player.key);
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
   }
 
-  deletePlayer(playerKey) {
+  async deletePlayer(playerKey) {
     if (!playerKey) {
       return new Error('You must provide a playerKey in order to delete a player!');
     }
     const params = concatParams(this.config, this.secretKey)({playerKey});
-    return fetch(`${this.baseUrl}/players/delete?${params}`, {headers})
-      .then(res => res.json())
-      .then(res => {
-        if (res.players.total === 1) {
-          return res.players.player[0];
-        }
-        return players.player;
-      })
-      .catch(err => new Error(err));
+    try {
+      const response = await request({
+        url: `${this.baseUrl}/players/delete?${params}`,
+        json: true,
+        headers
+      });
+      if (response.players.total === 1) {
+        return response.players.player[0];
+      }
+      return players.player;
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
   }
 
-  updatePlayer(playerKey, newInfo) {
+  async updatePlayer(playerKey, newInfo) {
     if (!playerKey) {
       return new Error('You must provide a playerKey in order to update a player!');
     }
     const params = concatParams(this.config, this.secretKey)({playerKey, ...newInfo});
-    return fetch(`${this.baseUrl}/players/update?${params}`, {headers})
-      .then(res => res.json())
-      .then(res => {
-        if (res.status === 'error') {
-          return {status: 'Error', message: `Player with the key ${playerKey} does not exist`};
-        }
-        return this.getPlayer(playerKey);
-      })
-      .catch(err => new Error(err));
+    try {
+      const response = await request({
+        url: `${this.baseUrl}/players/update?${params}`,
+        json: true,
+        headers
+      });
+      if (response.status === 'error') {
+        return {status: 'Error', message: `Player with the key ${playerKey} does not exist`};
+      }
+      return this.getPlayer(playerKey);
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
   }
 }
 

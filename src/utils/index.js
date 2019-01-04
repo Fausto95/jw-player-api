@@ -103,15 +103,19 @@ const getUploadTokenAndKey = body => ({
 
 const getThumbnailUploadParams = async (config, secretKey, videoKey, request) => {
   let params = concatParams(config, secretKey)({videoKey});
-  const {thumbnail: {status}} = await (await request(
-    `https://api.jwplatform.com/v1/videos/thumbnails/show?${params}`,
-    {headers}
-  )).json();
+  const {thumbnail: {status}} = await request({
+    url: `https://api.jwplatform.com/v1/videos/thumbnails/show?${params}`,
+    headers,
+    json: true
+  });
+  console.log({status});
   if (status === 'ready') {
     params = concatParams(config, secretKey)({videoKey});
-    const response = await (await request(
-      `https://api.jwplatform.com/v1/videos/thumbnails/update?${params}`
-    )).json();
+    const response = await request({
+      url: `https://api.jwplatform.com/v1/videos/thumbnails/update?${params}`,
+      json: true,
+      headers
+    });
     return getUploadTokenAndKey(response);
   }
   return new Error('Unaible to upload this thumbnail');
