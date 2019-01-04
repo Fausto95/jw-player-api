@@ -1,4 +1,5 @@
 import fetch from 'isomorphic-fetch';
+import request from 'request-promise';
 import 'es6-promise';
 import {
   headers,
@@ -13,12 +14,29 @@ import {
 
 class JWPlayerAPI {
   constructor(config) {
-    this.baseUrl = 'https://api.jwplatform.com/v1';
-    this.uploadBaseUrl = 'https://upload.jwplatform.com/v1';
+    this.baseUrl = 'http://api.jwplatform.com/v1';
+    this.uploadBaseUrl = 'http://upload.jwplatform.com/v1';
     this.contentBaseUrl = 'https://content.jwplatform.com';
     this.config = generateParams(config);
     this.secretKey = config.secretKey;
     this.videosBaseUrl = '/videos';
+  }
+
+  async fetchUpload(downloadUrl, customParams) {
+    let videoParams = {};
+    if (!downloadUrl) {
+      return newError('You must provide an url to create a video');
+    }
+    if (customParams) {
+      videoParams = customParams;
+    }
+    const params = concatParams(this.config, this.secretKey)({downloadUrl, ...videoParams});
+    const response = await request.post({
+      url: `${this.baseUrl}${this.videosBaseUrl}/create?${params}`,
+      headers,
+      json: true
+    });
+    return response;
   }
 
   async getAllVideos(params) {
