@@ -1,6 +1,6 @@
 {
   "name": "jwplayer-sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A library wrapper around JW Player API",
   "main": "dist/jwplayer-sdk.js",
   "umd:main": "dist/jwplayer-sdk.umd.js",

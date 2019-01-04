@@ -1,5 +1,7 @@
 :🚧: Still under construction :🚧: (currently working in Node.js)
 
+`Examples`: https://repl.it/@Fausto95/jwplayer-sdk
+
 
 # 🔧 Installation
 ```shell
@@ -8,6 +10,8 @@ yarn add jwplayer-sdk
 # ⚙️ Usage
 
 ```js
+
+
 
 // ES Modules
 import JWPlayer from 'jwplayer-sdk';
@@ -90,7 +94,7 @@ Make your changes, test and send a PR
 - [ ] /videos/tags
 - [x] /videos/thumbnails
 - [ ] /videos/tracks
-- [ ] /fetch-upload
+- [x] /fetch-upload
 
 ## License
 
