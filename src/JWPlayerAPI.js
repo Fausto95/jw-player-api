@@ -37,7 +37,7 @@ class JWPlayerAPI {
         headers,
         json: true
       });
-      return response;
+      return this.getVideo(response.video.key);
     } catch (error) {
       return Promise.reject(new Error(error));
     }
@@ -71,7 +71,7 @@ class JWPlayerAPI {
         headers,
         json: true
       });
-      return getVideoInfo(res.video);
+      return getVideoInfo(video);
     } catch (error) {
       return Promise.reject(new Error(error));
     }
