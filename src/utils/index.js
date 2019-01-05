@@ -2,10 +2,10 @@ import _ from 'lodash/fp';
 import sha1 from 'crypto-js/sha1';
 import utf8 from 'crypto-js/enc-utf8';
 import hex from 'crypto-js/enc-hex';
-import nonce from 'nonce';
+import nonce from './nonce';
 import {stringify, parse} from 'query-string';
-import camelCase from 'to-camel-case';
-import snake_case from 'to-snake-case';
+import camelCase from './camelCase';
+import snake_case from './snakeCase';
 
 const headers = {
   'Content-Type': 'application/x-www-form-urlencoded',

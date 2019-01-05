@@ -1,5 +1,4 @@
 import request from 'request-promise';
-import 'es6-promise';
 import {
   headers,
   mode,
@@ -16,9 +15,9 @@ class JWPlayerAPI {
     this.baseUrl = 'http://api.jwplatform.com/v1';
     this.uploadBaseUrl = 'http://upload.jwplatform.com/v1';
     this.contentBaseUrl = 'https://content.jwplatform.com';
+    this.videosBaseUrl = '/videos';
     this.config = generateParams(config);
     this.secretKey = config.secretKey;
-    this.videosBaseUrl = '/videos';
   }
 
   async fetchUpload(downloadUrl, customParams) {
@@ -37,7 +36,32 @@ class JWPlayerAPI {
         headers,
         json: true
       });
-      return this.getVideo(response.video.key);
+      return await this.getVideo(response.video.key);
+    } catch (error) {
+      return Promise.reject(new Error(error));
+    }
+  }
+  batchFetchUpload(content) {
+    if (!content) {
+      return newError('You must provide a content in order to upload it');
+    }
+    const self = this;
+    try {
+      return content.reduce(async (acc, current) => {
+        const {title, downloadUrl, tags} = current;
+        const params = concatParams(self.config, self.secretKey)({downloadUrl, title, tags});
+        const response = await request({
+          url: `${self.baseUrl}${self.videosBaseUrl}/create?${params}`,
+          method: 'POST',
+          headers,
+          json: true
+        });
+        const videoInfo = await self.getVideo(response.video.key);
+        acc = await acc;
+        acc.push([{...videoInfo}]);
+        return acc;
+      }, Promise.resolve([]));
+      return Promise.all(content);
     } catch (error) {
       return Promise.reject(new Error(error));
     }
@@ -108,7 +132,7 @@ class JWPlayerAPI {
       if (response.status === 'error') {
         return {status: 'Error', message: `Video with the key ${videoKey} does not exist`};
       }
-      return this.getVideo(videoKey);
+      return await this.getVideo(videoKey);
     } catch (error) {
       return Promise.reject(new Error(error));
     }
@@ -192,7 +216,7 @@ class JWPlayerAPI {
         headers,
         formData: {file}
       });
-      return this.getVideo(uploadResponse.media.key);
+      return await this.getVideo(uploadResponse.media.key);
     } catch (error) {
       return Promise.reject(new Error(error));
     }
@@ -243,7 +267,7 @@ class JWPlayerAPI {
         headers,
         json: true
       });
-      return this.getPlayer(player.key);
+      return await this.getPlayer(player.key);
     } catch (error) {
       return Promise.reject(new Error(error));
     }
@@ -283,7 +307,7 @@ class JWPlayerAPI {
       if (response.status === 'error') {
         return {status: 'Error', message: `Player with the key ${playerKey} does not exist`};
       }
-      return this.getPlayer(playerKey);
+      return await this.getPlayer(playerKey);
     } catch (error) {
       return Promise.reject(new Error(error));
     }

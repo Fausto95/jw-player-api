@@ -55,10 +55,13 @@ const videos = await JWAPI.getAllVideos(params); // params are optional
   .createPlayer(params: Object) // Required
   .updatePlayer(playerKey: String, params: Object) // Both required
   .deletePlayer(playerKey: String) // Required
+
 // Videos
   .getAllVideos(params: Object) // Optional
   .getVideo(videoKey: String) // Required
   .uploadVideo(file: ReadableStream, params: Object) // Params is optional
+  .fetchUpload(url: String, params: Object) // Url is Required
+  .batchFetchUpload(content: Object) // Content is Required
   .updateVideo(videoKey: String, params: Object) // Both required
   .deleteVideo(videoKey: String) // Required
 
