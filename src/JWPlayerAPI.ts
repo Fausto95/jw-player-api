@@ -1,7 +1,7 @@
 import request from 'request-promise';
+import {Config, CustomParams, VideoParams, Thumbnail, BatchContent, PlayerParams, Video} from './types';
 import {
   headers,
-  mode,
   generateParams,
   getVideoInfo,
   concatParams,
@@ -11,7 +11,13 @@ import {
 } from './utils';
 
 class JWPlayerAPI {
-  constructor(config) {
+  baseUrl: string;
+  uploadBaseUrl: string;
+  contentBaseUrl: string;
+  videosBaseUrl: string;
+  config: string;
+  secretKey: string;
+  constructor(config: Config) {
     this.baseUrl = 'http://api.jwplatform.com/v1';
     this.uploadBaseUrl = 'http://upload.jwplatform.com/v1';
     this.contentBaseUrl = 'https://content.jwplatform.com';
@@ -20,10 +26,10 @@ class JWPlayerAPI {
     this.secretKey = config.secretKey;
   }
 
-  async fetchUpload(downloadUrl, customParams) {
+  async fetchUpload(downloadUrl: string, customParams: CustomParams) {
     let videoParams = {};
     if (!downloadUrl) {
-      return newError('You must provide an url to create a video');
+      return new Error('You must provide an url to create a video');
     }
     if (customParams) {
       videoParams = customParams;
@@ -41,13 +47,13 @@ class JWPlayerAPI {
       return Promise.reject(new Error(error));
     }
   }
-  batchFetchUpload(content) {
+  batchFetchUpload(content: Array<BatchContent>) {
     if (!content) {
-      return newError('You must provide a content in order to upload it');
+      return new Error('You must provide a content in order to upload it');
     }
     const self = this;
     try {
-      return content.reduce(async (acc, current) => {
+      return content.reduce(async (acc: any, current: BatchContent) => {
         const {title, downloadUrl, tags} = current;
         const params = concatParams(self.config, self.secretKey)({downloadUrl, title, tags});
         const response = await request({
@@ -58,23 +64,23 @@ class JWPlayerAPI {
         });
         const videoInfo = await self.getVideo(response.video.key);
         acc = await acc;
-        acc.push([{...videoInfo}]);
+        acc.push({...videoInfo});
         return acc;
       }, Promise.resolve([]));
-      return Promise.all(content);
+      // return Promise.all(content);
     } catch (error) {
       return Promise.reject(new Error(error));
     }
   }
 
-  async getAllVideos(params) {
-    let _params = this.config;
-    if (params) {
-      _params = concatParams(this.config, this.secretKey)(params);
+  async getAllVideos(customParams: CustomParams) {
+    let params = this.config;
+    if (customParams) {
+      params = concatParams(this.config, this.secretKey)(customParams);
     }
     try {
       const {videos} = await request({
-        url: `${this.baseUrl}${this.videosBaseUrl}/list?${_params}`,
+        url: `${this.baseUrl}${this.videosBaseUrl}/list?${params}`,
         headers,
         json: true
       });
@@ -84,7 +90,7 @@ class JWPlayerAPI {
     }
   }
 
-  async getVideo(videoKey) {
+  async getVideo(videoKey: string) {
     if (!videoKey) {
       return new Error('You must provide a videoKey in order to get the video information!');
     }
@@ -101,7 +107,7 @@ class JWPlayerAPI {
     }
   }
 
-  async deleteVideo(videoKey) {
+  async deleteVideo(videoKey: string) {
     if (!videoKey) {
       return new Error('You must provide a videoKey in order to delete a video!');
     }
@@ -118,7 +124,7 @@ class JWPlayerAPI {
     }
   }
 
-  async updateVideoInfo(videoKey, newInfo) {
+  async updateVideoInfo(videoKey: string, newInfo: VideoParams) {
     try {
       if (!videoKey) {
         return new Error('You must provide a videoKey in order to update a video!');
@@ -138,7 +144,7 @@ class JWPlayerAPI {
     }
   }
 
-  async modifyThumbnail(videoKey, options) {
+  async modifyThumbnailFrame(videoKey: string, options: Thumbnail) {
     if (!videoKey) {
       return new Error('You must provide a videoKey in order to update a video!');
     }
@@ -147,8 +153,7 @@ class JWPlayerAPI {
       const {thumbnail: {status}} = await request({
         url: `${this.baseUrl}${this.videosBaseUrl}/thumbnails/show?${params}`,
         headers,
-        json: true,
-        mode
+        json: true
       });
       if (status === 'ready') {
         params = concatParams(this.config, this.secretKey)({videoKey, ...options});
@@ -164,11 +169,10 @@ class JWPlayerAPI {
     }
   }
 
-  async uploadThumbnail(videoKey, image) {
+  async uploadThumbnail(videoKey: string, image: ReadableStream) {
     if (!videoKey) {
       return new Error('You must provide a Key in order to upload a thmbnail!');
     }
-    const params = concatParams(this.config, this.secretKey)({videoKey});
     const {key, token} = await getThumbnailUploadParams(
       this.config,
       this.secretKey,
@@ -191,7 +195,7 @@ class JWPlayerAPI {
     }
   }
 
-  async uploadVideo(file, customParams) {
+  async uploadVideo(file: ReadableStream, customParams: CustomParams) {
     let videoParams = {};
     if (!file) {
       return new Error('You must provide a file in order to upload it!');
@@ -222,7 +226,7 @@ class JWPlayerAPI {
     }
   }
 
-  async getAllPlayers(params) {
+  async getAllPlayers(params: any) {
     let _params = this.config;
     if (params) {
       _params = concatParams(this.config, this.secretKey)(params);
@@ -239,7 +243,7 @@ class JWPlayerAPI {
     }
   }
 
-  async getPlayer(playerKey) {
+  async getPlayer(playerKey: string) {
     if (!playerKey) {
       return new Error('You must provide a playerKey in order to get a player!');
     }
@@ -256,7 +260,7 @@ class JWPlayerAPI {
     }
   }
 
-  async createPlayer(params) {
+  async createPlayer(params: PlayerParams) {
     if (!params) {
       return new Error('You must provide all the parameters in order to create a player!');
     }
@@ -273,7 +277,7 @@ class JWPlayerAPI {
     }
   }
 
-  async deletePlayer(playerKey) {
+  async deletePlayer(playerKey: string) {
     if (!playerKey) {
       return new Error('You must provide a playerKey in order to delete a player!');
     }
@@ -284,20 +288,17 @@ class JWPlayerAPI {
         json: true,
         headers
       });
-      if (response.players.total === 1) {
-        return response.players.player[0];
-      }
-      return players.player;
+      return response;
     } catch (error) {
       return Promise.reject(new Error(error));
     }
   }
 
-  async updatePlayer(playerKey, newInfo) {
+  async updatePlayer(playerKey: string, newPlayerInfo: PlayerParams) {
     if (!playerKey) {
       return new Error('You must provide a playerKey in order to update a player!');
     }
-    const params = concatParams(this.config, this.secretKey)({playerKey, ...newInfo});
+    const params = concatParams(this.config, this.secretKey)({playerKey, ...newPlayerInfo});
     try {
       const response = await request({
         url: `${this.baseUrl}/players/update?${params}`,

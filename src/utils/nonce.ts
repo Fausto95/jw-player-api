@@ -1,5 +1,5 @@
-export default length => {
-  let last = null;
+export default (length: number) => {
+  let last: number|null = null;
   let repeat = 0;
 
   if (typeof length == 'undefined') length = 15;
