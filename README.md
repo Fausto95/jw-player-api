@@ -20,7 +20,6 @@ import JWPlayer from 'jwplayer-sdk';
 const JWAPI = new JWPlayer({
   apiKey: 'your apiKey goes here',
   secretKey: 'your secreteKey goes here',
-  apiFormat: 'json'
 });
 
 
