@@ -1,4 +1,3 @@
-:🚧: Still under construction :🚧: (currently working in Node.js)
 
 `Examples`: https://repl.it/@Fausto95/jwplayer-sdk
 
@@ -66,7 +65,7 @@ const videos = await JWAPI.getAllVideos(params); // params are optional
   .deleteVideo(videoKey: String) // Required
 
 //Videos Thumbnails
-  .modifyThumbnail(videoKey: String, params: Object) // Both Required
+  .modifyThumbnailFrame(videoKey: String, params: Object) // Both Required
   .uploadThumbnail(videoKey: String, imageFile: ReadableStream) // Both Required
 ````
 
