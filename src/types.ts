@@ -53,8 +53,7 @@ export type VideoParams = {
 };
 
 export type Thumbnail = {
-  videoKey: string,
-  position?: number
+  position: number
 };
 
 type PlayerAdversiting = {
@@ -186,5 +185,11 @@ type PlayerKey = {
 type VideoKey = {
   videoKey: string
 };
+
+export type Response = {
+  [key: string]: string|any;
+  status: string
+};
+
 export type CustomParams = VideoParams | Thumbnail | BatchContent | FetchUpload | PlayerKey | VideoKey | PlayerParams| {};
 
