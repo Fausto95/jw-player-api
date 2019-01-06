@@ -1,6 +1,7 @@
 
 `Examples`: https://repl.it/@Fausto95/jwplayer-sdk
 
+`API-Reference`: https://jwplayer-sdk.netlify.com/
 
 # 🔧 Installation
 ```shell
