@@ -1,3 +1,7 @@
+🚨🚨🚨 STALE 🚨🚨🚨
+
+> While this library might still work, I'm no longer maintaining it. Feel free to fork and patch if needed.
+
 
 `Examples`: https://repl.it/@Fausto95/jwplayer-sdk
 
